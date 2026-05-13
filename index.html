@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>حاسبة أرباح تجارة العملات – غزة</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f0f4f0;
+      margin: 0;
+      padding: 20px;
+      color: #1a2e1a;
+    }
+    .container {
+      max-width: 700px;
+      margin: auto;
+      background: #ffffff;
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0,40,0,0.1);
+      padding: 30px 25px;
+    }
+    h1 {
+      text-align: center;
+      color: #2d5a27;
+      margin-bottom: 5px;
+    }
+    .subtitle {
+      text-align: center;
+      color: #4a7c43;
+      margin-bottom: 30px;
+      font-size: 14px;
+    }
+    .section {
+      background: #f9fbf8;
+      border: 1px solid #c8e0c0;
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 25px;
+    }
+    .section h2 {
+      margin-top: 0;
+      color: #2d5a27;
+      font-size: 18px;
+      border-bottom: 2px solid #a8d5a0;
+      padding-bottom: 8px;
+    }
+    .form-group {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .form-group label {
+      width: 200px;
+      font-weight: bold;
+      color: #1e3b1a;
+    }
+    .form-group input, .form-group select {
+      flex: 1;
+      min-width: 120px;
+      padding: 10px;
+      border: 1px solid #bcd0b0;
+      border-radius: 12px;
+      font-size: 16px;
+      background: #fff;
+    }
+    .readonly-input {
+      background: #e9f3e5;
+      font-weight: bold;
+      color: #2d5a27;
+    }
+    .row-dual {
+      display: flex;
+      gap: 15px;
+      flex-wrap: wrap;
+    }
+    .row-dual .form-group {
+      flex: 1;
+      min-width: 180px;
+    }
+    .button {
+      background: #3b7233;
+      color: white;
+      border: none;
+      padding: 14px 30px;
+      border-radius: 30px;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+      display: block;
+      margin: 25px auto 10px;
+      transition: 0.2s;
+      width: 80%;
+      max-width: 300px;
+    }
+    .button:hover {
+      background: #2d5a27;
+    }
+    .results {
+      background: #eef6ea;
+      border-radius: 16px;
+      padding: 20px;
+      margin-top: 20px;
+      border: 1px solid #b1d0a5;
+    }
+    .result-item {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 10px;
+      font-size: 16px;
+    }
+    .result-item span:first-child {
+      font-weight: bold;
+    }
+    .profit {
+      color: #1c6b1c;
+    }
+    .loss {
+      color: #b13232;
+    }
+    .note {
+      font-size: 13px;
+      color: #555;
+      margin-top: 15px;
+    }
+    .hint {
+      font-size: 12px;
+      color: #888;
+      margin-top: 4px;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h1>🧮 حاسبة أرباح تجارة العملات</h1>
+  <div class="subtitle">غزة – كاش / فكة / تطبيق (بنكي)</div>
+
+  <!-- صفقة الشراء والبيع -->
+  <div class="section">
+    <h2>📦 صفقة المنتج</h2>
+    <div class="row-dual">
+      <div class="form-group">
+        <label>نوع الشراء</label>
+        <select id="buyCurrency">
+          <option value="cash">كاش</option>
+          <option value="app">تطبيق (بنكي)</option>
+          <option value="fikka">فكة</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>المبلغ المدفوع</label>
+        <input type="number" id="buyAmount" step="0.01" placeholder="مثلاً 53" value="53">
+      </div>
+    </div>
+    <div class="row-dual">
+      <div class="form-group">
+        <label>نوع البيع (المتحصل)</label>
+        <select id="sellCurrency">
+          <option value="fikka" selected>فكة</option>
+          <option value="cash">كاش</option>
+          <option value="app">تطبيق (بنكي)</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>إجمالي إيراد البيع</label>
+        <input type="number" id="sellAmount" step="0.01" placeholder="مثلاً 48" value="48">
+      </div>
+    </div>
+    <div class="form-group" id="workerFeeGroup">
+      <label>أجار العامل (تطبيق لكل 100 فكة)</label>
+      <input type="number" id="workerFeeRate" step="0.01" placeholder="مثلاً 10" value="10">
+      <div class="hint" style="flex-basis:100%; margin-right:200px;">النسبة التي يأخذها العامل: لكل 100 شيكل فكة يجمعها، كم شيكل تطبيق تدفع له.</div>
+    </div>
+  </div>
+
+  <!-- إعدادات التكييش (إدخال الفكة فقط) -->
+  <div class="section">
+    <h2>🔄 تكييش (فكة + تطبيق → كاش)</h2>
+    <div class="row-dual">
+      <div class="form-group">
+        <label>مقابل 1000 كاش، الفكة</label>
+        <input type="number" id="fPer1000cash" step="0.01" value="180" placeholder="180">
+      </div>
+      <div class="form-group">
+        <label>البنكي (تطبيق) تلقائي</label>
+        <input type="text" id="aPer1000cash_display" class="readonly-input" value="820" readonly>
+        <input type="hidden" id="aPer1000cash" value="820">
+      </div>
+    </div>
+    <div class="note">تدخل فقط ما تعطيه فكة، والبنكي = 1000 - الفكة، يظهر تلقائياً.</div>
+  </div>
+
+  <!-- تحويل كاش إلى تطبيق (سلعة عامة) -->
+  <div class="section">
+    <h2>💱 تحويل كاش إلى تطبيق</h2>
+    <div class="row-dual">
+      <div class="form-group">
+        <label>سعر السلعة كاش (لـ100 وحدة)</label>
+        <input type="number" id="buyItemCash" step="0.01" value="265" placeholder="مثال: 265">
+      </div>
+      <div class="form-group">
+        <label>سعر السلعة تطبيق (لـ100 وحدة)</label>
+        <input type="number" id="sellItemApp" step="0.01" value="280" placeholder="مثال: 280">
+      </div>
+    </div>
+    <div class="note">أي سلعة تشتريها كاش وتبيعها تطبيق (مثل USDT، ذهب، عملات رقمية..)</div>
+  </div>
+
+  <button class="button" onclick="calculate()">احسب الربح (يدوي)</button>
+
+  <!-- النتائج -->
+  <div class="results" id="resultsPanel" style="display: none;">
+    <h3 style="margin-top:0; color:#2d5a27;">📊 تفاصيل الدورة</h3>
+    <div id="resultDetails"></div>
+  </div>
+</div>
+
+<script>
+// دوال مساعدة
+function updateAppAutomatically() {
+  const fInput = document.getElementById('fPer1000cash');
+  const fVal = parseFloat(fInput.value);
+  if (isNaN(fVal) || fVal < 0 || fVal > 1000) {
+    document.getElementById('aPer1000cash_display').value = '';
+    document.getElementById('aPer1000cash').value = 0;
+    return;
+  }
+  const appVal = 1000 - fVal;
+  document.getElementById('aPer1000cash_display').value = appVal.toFixed(2);
+  document.getElementById('aPer1000cash').value = appVal.toFixed(2);
+}
+
+function handleSellCurrencyChange() {
+  const sellCur = document.getElementById('sellCurrency').value;
+  const workerGroup = document.getElementById('workerFeeGroup');
+  if (sellCur === 'fikka') {
+    workerGroup.style.display = 'flex';
+  } else {
+    workerGroup.style.display = 'none';
+  }
+  calculate(); // إعادة الحساب فوراً
+}
+
+// دالة الحساب الرئيسية
+function calculate() {
+  // --- قراءة المدخلات ---
+  const buyCur = document.getElementById('buyCurrency').value;
+  const buyAmt = parseFloat(document.getElementById('buyAmount').value);
+  const sellCur = document.getElementById('sellCurrency').value;
+  const sellAmt = parseFloat(document.getElementById('sellAmount').value);
+  
+  let workerFeeRate = 0;
+  if (sellCur === 'fikka') {
+    const rateInput = document.getElementById('workerFeeRate');
+    if (rateInput) {
+      workerFeeRate = parseFloat(rateInput.value);
+      if (isNaN(workerFeeRate)) workerFeeRate = 0;
+    }
+  }
+  const workerFeeAmount = (sellCur === 'fikka') ? (sellAmt * workerFeeRate / 100) : 0;
+
+  const fPer1000 = parseFloat(document.getElementById('fPer1000cash').value);
+  const aPer1000 = parseFloat(document.getElementById('aPer1000cash').value);
+  const buyItemCash = parseFloat(document.getElementById('buyItemCash').value);
+  const sellItemApp = parseFloat(document.getElementById('sellItemApp').value);
+
+  // التحقق الأساسي
+  if (isNaN(buyAmt) || isNaN(sellAmt) || isNaN(fPer1000) || isNaN(aPer1000) || isNaN(buyItemCash) || isNaN(sellItemApp)) {
+    document.getElementById('resultsPanel').style.display = 'block';
+    document.getElementById('resultDetails').innerHTML = '<p style="color:red;">⚠️ من فضلك أدخل أرقاماً صحيحة في جميع الحقول.</p>';
+    return;
+  }
+  if (buyAmt < 0 || sellAmt < 0 || workerFeeRate < 0 || fPer1000 <= 0 || aPer1000 < 0 || buyItemCash <= 0 || sellItemApp <= 0) {
+    document.getElementById('resultsPanel').style.display = 'block';
+    document.getElementById('resultDetails').innerHTML = '<p style="color:red;">⚠️ يجب أن تكون القيم موجبة، وأن تكون الفكة أقل من 1000.</p>';
+    return;
+  }
+  if (fPer1000 >= 1000) {
+    document.getElementById('resultsPanel').style.display = 'block';
+    document.getElementById('resultDetails').innerHTML = '<p style="color:red;">⚠️ قيمة الفكة يجب أن تكون أقل من 1000.</p>';
+    return;
+  }
+
+  // --- 1. صافي التغير من صفقة المنتج ---
+  let deltaCash = 0, deltaApp = 0, deltaFikka = 0;
+
+  if (buyCur === 'cash') deltaCash -= buyAmt;
+  else if (buyCur === 'app') deltaApp -= buyAmt;
+  else if (buyCur === 'fikka') deltaFikka -= buyAmt;
+
+  if (sellCur === 'cash') deltaCash += sellAmt;
+  else if (sellCur === 'app') deltaApp += sellAmt;
+  else if (sellCur === 'fikka') deltaFikka += sellAmt;
+
+  // خصم أجار العامل
+  deltaApp -= workerFeeAmount;
+
+  // --- 2. إعداد معاملات التحويل ---
+  const cashToAppRate = sellItemApp / buyItemCash;
+  const fPerCash = fPer1000 / 1000;
+  const aPerCash = aPer1000 / 1000;
+
+  let finalAppDelta = deltaApp;
+  let additionalAppInvested = 0;
+
+  // معالجة الفكة الفائضة
+  if (deltaFikka > 0) {
+    const cashFromFikka = deltaFikka / fPerCash;
+    const appCost = cashFromFikka * aPerCash;
+    const appFromCash = cashFromFikka * cashToAppRate;
+    finalAppDelta += (appFromCash - appCost);
+    additionalAppInvested += appCost;
+  } else if (deltaFikka < 0) {
+    document.getElementById('resultsPanel').style.display = 'block';
+    document.getElementById('resultDetails').innerHTML = '<p style="color:red;">⚠️ لا يمكن معالجة عجز في الفكة. هذه الحالة غير مدعومة حالياً.</p>';
+    return;
+  }
+
+  // معالجة الكاش الفائض أو العجز
+  if (deltaCash > 0) {
+    finalAppDelta += deltaCash * cashToAppRate;
+  } else if (deltaCash < 0) {
+    finalAppDelta += deltaCash * cashToAppRate;
+  }
+
+  // --- حساب رأس المال المستثمر (مكافئ تطبيق) ---
+  let capitalAppValue = 0;
+
+  if (buyCur === 'cash') capitalAppValue += buyAmt * cashToAppRate;
+  else if (buyCur === 'app') capitalAppValue += buyAmt;
+  else if (buyCur === 'fikka') {
+    const fikkaToApp = (cashToAppRate / fPerCash) - (aPerCash / fPerCash);
+    capitalAppValue += buyAmt * fikkaToApp;
+  }
+
+  capitalAppValue += additionalAppInvested;
+  capitalAppValue += workerFeeAmount;
+
+  if (capitalAppValue <= 0) {
+    document.getElementById('resultsPanel').style.display = 'block';
+    document.getElementById('resultDetails').innerHTML = '<p style="color:red;">رأس المال المستثمر صفر أو سالب، لا يمكن حساب النسبة.</p>';
+    return;
+  }
+
+  const profitPercent = (finalAppDelta / capitalAppValue) * 100;
+
+  let tekyeeshNetApp = 0;
+  if (deltaFikka > 0) {
+    const cashFromFikka = deltaFikka / fPerCash;
+    tekyeeshNetApp = (cashFromFikka * cashToAppRate) - (cashFromFikka * aPerCash);
+  }
+  const cashConversionApp = deltaCash * cashToAppRate;
+
+  let html = `
+    <div class="result-item"><span>💰 صافي الربح (شيكل تطبيق)</span> <span class="${finalAppDelta >= 0 ? 'profit' : 'loss'}">${finalAppDelta.toFixed(2)} ش</span></div>
+    <div class="result-item"><span>📈 نسبة الربح على رأس المال</span> <span>${profitPercent.toFixed(2)}%</span></div>
+    <div class="result-item"><span>🏦 رأس المال المستثمر (مكافئ تطبيق)</span> <span>${capitalAppValue.toFixed(2)} ش</span></div>
+    <hr style="border-color:#bcd0b0;">
+    <div class="result-item"><span>🔄 صافي تغير الفكة</span> <span>${deltaFikka.toFixed(2)} ش (تمت تسويته)</span></div>
+    <div class="result-item"><span>💵 صافي تغير الكاش</span> <span>${deltaCash.toFixed(2)} ش (تمت تسويته)</span></div>
+    <div class="result-item"><span>📱 صافي تغير التطبيق (قبل التسويات)</span> <span>${deltaApp.toFixed(2)} ش</span></div>
+    <div class="result-item"><span>⚡ تحويل فكة إلى تطبيق (صافي)</span> <span>${tekyeeshNetApp.toFixed(2)} ش</span></div>
+    <div class="result-item"><span>🔁 تحويل كاش إلى تطبيق</span> <span>${cashConversionApp.toFixed(2)} ش</span></div>
+    <div class="result-item"><span>🧾 أجار العامل (خصم تطبيق)</span> <span>-${workerFeeAmount.toFixed(2)} ش</span></div>
+    <p class="note">* صافي الربح = التغير النهائي في رصيد التطبيق بعد إغلاق الدورة وتصفير الفكة والكاش.</p>
+  `;
+
+  document.getElementById('resultsPanel').style.display = 'block';
+  document.getElementById('resultDetails').innerHTML = html;
+}
+
+// ربط الأحداث التلقائية بجميع حقول الإدخال والقوائم
+function attachAutoEvents() {
+  const allInputs = document.querySelectorAll('input, select');
+  allInputs.forEach(input => {
+    input.addEventListener('input', function() {
+      // للتأكد من تحديث البنكي قبل الحساب إذا تغيرت الفكة
+      if (this.id === 'fPer1000cash') {
+        updateAppAutomatically();
+      }
+      calculate();
+    });
+    input.addEventListener('change', function() {
+      if (this.id === 'sellCurrency') {
+        handleSellCurrencyChange();
+      } else {
+        calculate();
+      }
+    });
+  });
+}
+
+// تشغيل أول مرة
+window.addEventListener('DOMContentLoaded', function() {
+  updateAppAutomatically();
+  attachAutoEvents();
+  calculate(); // حساب بالقيم الافتراضية
+});
+</script>
+</body>
+</html>
